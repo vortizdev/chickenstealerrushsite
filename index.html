@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chicken Stealer Rush</title>
+<meta name="description" content="A fast 1v1 goblin card battle for Android. Steal their chickens, guard your own. Matches last 2:30.">
+<!-- Link previews (Discord, Reddit, X). Replace YOUR-SITE with your real address once it's live. -->
+<meta property="og:title" content="Chicken Stealer Rush">
+<meta property="og:description" content="Steal their chickens. Guard your own. A fast 1v1 goblin card battle for Android.">
+<meta property="og:image" content="https://YOUR-SITE/assets/key-art.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/icon.png">
+<script>
+  // Defined up here because screenshot images can finish loading before the page's last script runs.
+  // The first screenshot that loads reveals the Screenshots section.
+  function showShots() { document.getElementById('screens').hidden = false; }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* Colors come from the game: gold = keywords and card names, teal = traits,
+     warm wood browns for the goblin camp. */
+  :root {
+    --wood: #24170f;      /* page background */
+    --bark: #33231a;      /* panels */
+    --bark-line: #4d3624; /* panel borders */
+    --egg: #fff1d0;       /* main text */
+    --egg-dim: #d9c7a3;   /* quiet text */
+    --gold: #f4b740;
+    --teal: #43c2b4;
+    --ember: #e8603c;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    color: var(--egg);
+    font: 400 17px/1.6 Rubik, system-ui, sans-serif;
+    /* The in-game diamond lattice: two sets of thin diagonal lines over the wood color. */
+    background-color: var(--wood);
+    background-image:
+      repeating-linear-gradient(45deg, rgba(244,183,64,.05) 0 1px, transparent 1px 34px),
+      repeating-linear-gradient(-45deg, rgba(244,183,64,.05) 0 1px, transparent 1px 34px);
+    animation: drift 60s linear infinite; /* slow scroll, like the menu panels */
+  }
+  @keyframes drift { to { background-position: 340px 340px, -340px 340px; } }
+  @media (prefers-reduced-motion: reduce) { body { animation: none; } html { scroll-behavior: auto; } }
+
+  a { color: var(--teal); }
+  a:focus-visible, button:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+  h2 { font: 400 clamp(30px, 5vw, 44px)/1.1 "Lilita One", sans-serif; margin: 0 0 20px; color: var(--egg); }
+  .card { color: var(--gold); font-weight: 700; }  /* card names, as in the game */
+  .trait { color: var(--teal); font-weight: 700; } /* traits, as in the game */
+
+  /* Top bar */
+  nav { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; gap: 16px; }
+  nav .studio { font-family: "Lilita One", sans-serif; font-size: 18px; color: var(--egg-dim); text-decoration: none; white-space: nowrap; }
+  nav ul { list-style: none; display: flex; gap: 20px; margin: 0; padding: 0; flex-wrap: wrap; }
+  nav ul a { color: var(--egg-dim); text-decoration: none; font-weight: 500; }
+  nav ul a:hover { color: var(--egg); }
+
+  /* Hero: key art fading into the page, logo over the bottom edge */
+  .hero { position: relative; text-align: center; }
+  .key-art { display: block; width: 100%; max-height: 560px; object-fit: cover; border-radius: 18px;
+    -webkit-mask-image: linear-gradient(#000 60%, transparent); mask-image: linear-gradient(#000 60%, transparent); }
+  .hero-text { position: relative; margin-top: -120px; padding: 0 12px; }
+  .hero-text:first-child { margin-top: 40px; } /* key art removed (missing): no overlap */
+  .logo { margin: 0 auto 8px; max-width: 560px; font: 400 clamp(44px, 9vw, 84px)/1 "Lilita One", sans-serif;
+    color: var(--gold); text-shadow: 0 4px 0 #6b3d10, 0 8px 24px rgba(0,0,0,.5); } /* text fallback until the logo image is added */
+  .logo img { width: 100%; height: auto; display: block; }
+  .tagline { font: 400 clamp(24px, 4vw, 34px)/1.2 "Lilita One", sans-serif; margin: 0 0 12px; }
+  .pitch { max-width: 620px; margin: 0 auto 28px; color: var(--egg-dim); }
+  .ctas { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn { display: inline-block; padding: 14px 26px; border-radius: 14px; font-weight: 700; text-decoration: none; font-size: 17px; }
+  .btn-main { background: var(--gold); color: #3a2208; box-shadow: 0 5px 0 #a8701a; }
+  .btn-main:hover { transform: translateY(2px); box-shadow: 0 3px 0 #a8701a; }
+  .btn-soon { border: 2px dashed var(--bark-line); color: var(--egg-dim); }
+
+  section { padding: 72px 0 0; }
+  .panel { background: var(--bark); border: 2px solid var(--bark-line); border-radius: 18px; padding: 24px; }
+
+  /* Trailer */
+  .video { aspect-ratio: 16 / 9; border-radius: 18px; overflow: hidden; background: var(--bark); border: 2px solid var(--bark-line);
+    display: grid; place-items: center; color: var(--egg-dim); }
+  .video iframe { width: 100%; height: 100%; border: 0; }
+
+  /* How a match plays: three columns that stack on phones */
+  .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .three h3 { font: 400 28px/1 "Lilita One", sans-serif; margin: 0 0 10px; }
+  .three .steal h3 { color: var(--gold); }
+  .three .guard h3 { color: var(--teal); }
+  .three .win h3 { color: var(--ember); }
+  .three p { margin: 0; color: var(--egg-dim); }
+
+  /* Modes */
+  .modes { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .modes li { padding: 18px 20px; }
+  .modes b { display: block; font: 400 22px/1.2 "Lilita One", sans-serif; margin-bottom: 4px; }
+  .modes span { color: var(--egg-dim); }
+
+  /* Screenshots: phone-shaped, scroll sideways on small screens */
+  .shots { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x mandatory; }
+  .shots img { width: 220px; aspect-ratio: 9 / 16; object-fit: cover; border-radius: 16px; border: 2px solid var(--bark-line); flex: none; scroll-snap-align: start; }
+
+  /* Discord band */
+  .discord { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .discord p { margin: 0; max-width: 560px; color: var(--egg-dim); }
+
+  /* Press kit fact sheet */
+  .facts { display: grid; grid-template-columns: 150px 1fr; gap: 10px 20px; margin: 0 0 22px; }
+  .facts dt { color: var(--egg-dim); }
+  .facts dd { margin: 0; }
+
+  footer { padding: 72px 0 40px; color: var(--egg-dim); font-size: 15px; }
+  footer .row { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-top: 2px solid var(--bark-line); padding-top: 22px; }
+  footer ul { list-style: none; display: flex; gap: 18px; margin: 0; padding: 0; flex-wrap: wrap; }
+  [hidden] { display: none !important; }
+
+  @media (max-width: 720px) {
+    .three, .modes { grid-template-columns: 1fr; }
+    .hero-text { margin-top: -60px; }
+    .facts { grid-template-columns: 1fr; gap: 2px; }
+    .facts dd { margin-bottom: 10px; }
+    nav ul { gap: 14px; font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="studio" href="#">Karberus Studios</a>
+    <ul>
+      <li><a href="#trailer">Trailer</a></li>
+      <li><a href="#how">How it plays</a></li>
+      <li><a href="#press">Press</a></li>
+      <li><a data-link="discord" href="#">Discord</a></li>
+    </ul>
+  </nav>
+
+  <header class="hero">
+    <!-- assets/key-art.jpg: the wide key art (the 21:9 feature graphic art works). Removed automatically if missing. -->
+    <img class="key-art" src="assets/key-art.jpg" alt="" onerror="this.remove()">
+    <div class="hero-text">
+      <!-- assets/logo.png: transparent logo. Falls back to the game name in text if missing. -->
+      <h1 class="logo"><img src="assets/logo.png" alt="Chicken Stealer Rush" onerror="this.replaceWith(this.alt)"></h1>
+      <p class="tagline">Steal their chickens. Guard your own.</p>
+      <p class="pitch">A fast 1v1 card battle for Android. Send your goblins to raid the coop and your rival's nests, and stop their stealers before they get home. Every match lasts 2 minutes 30 seconds.</p>
+      <div class="ctas">
+        <a class="btn btn-main" data-link="discord" href="#">Join the Discord</a>
+        <!-- When the game is live, change this to a link to the Play Store listing. -->
+        <span class="btn btn-soon">Coming to Google Play in 2027</span>
+      </div>
+    </div>
+  </header>
+
+  <section id="trailer">
+    <h2>Trailer</h2>
+    <!-- Filled from CONFIG.youtubeId at the bottom of this file. -->
+    <div class="video" id="video">Trailer coming soon</div>
+  </section>
+
+  <section id="how">
+    <h2>How a match plays</h2>
+    <div class="three">
+      <div class="panel steal">
+        <h3>Steal</h3>
+        <p><span class="card">Sneaky Swipe</span>, <span class="card">Chicken Glider</span> and <span class="card">Tunnel Dig</span> each send a goblin after chickens a different way: tiptoeing, gliding or digging.</p>
+      </div>
+      <div class="panel guard">
+        <h3>Guard</h3>
+        <p><span class="card">Net</span> catches <span class="trait">Air</span> and <span class="trait">Sneak</span> stealers. <span class="card">Spike Moat</span> stops <span class="trait">Ground</span> and <span class="trait">Rocket</span>. Pick the right one before the thief arrives.</p>
+      </div>
+      <div class="panel win">
+        <h3>Win</h3>
+        <p>Fill all 9 nest slots, or hold the most chickens when the clock hits zero. A tie goes to Sudden Death: the next delivery wins.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="modes">
+    <h2>Ways to play</h2>
+    <ul class="modes">
+      <li class="panel"><b>Live 1v1</b><span>Real players, matched by Golden Eggs, your rank.</span></li>
+      <li class="panel"><b>Endless</b><span>Beat bot after bot on Easy, Normal or Hard, and climb the leaderboards.</span></li>
+      <li class="panel"><b>Clans</b><span>Unlock the Pyro and Tinkers clans, their goblins and their cards along the Golden Egg Road.</span></li>
+      <li class="panel"><b>Practice</b><span>Try a new deck against a bot anytime.</span></li>
+    </ul>
+  </section>
+
+  <!-- assets/shot-1.jpg to shot-4.jpg: portrait gameplay screenshots. The section hides itself if none load. -->
+  <section id="screens" hidden>
+    <h2>Screenshots</h2>
+    <div class="shots">
+      <img src="assets/shot-1.jpg" alt="Goblins running out to steal chickens mid-match" onerror="this.remove()" onload="showShots()">
+      <img src="assets/shot-2.jpg" alt="A Chicken Glider swooping over a Net" onerror="this.remove()" onload="showShots()">
+      <img src="assets/shot-3.jpg" alt="The hand of cards with one selected" onerror="this.remove()" onload="showShots()">
+      <img src="assets/shot-4.jpg" alt="Victory screen with rewards" onerror="this.remove()" onload="showShots()">
+    </div>
+  </section>
+
+  <section>
+    <div class="panel discord">
+      <div>
+        <h2>Play it first</h2>
+        <p>Tester spots, daily Raid Hour matches and update news all happen on Discord. It's a one-person studio, so you'll be talking to the developer.</p>
+      </div>
+      <a class="btn btn-main" data-link="discord" href="#">Join the Discord</a>
+    </div>
+  </section>
+
+  <section id="press">
+    <h2>Press kit</h2>
+    <div class="panel">
+      <dl class="facts">
+        <dt>Developer</dt><dd>Karberus Games, a one-person studio</dd>
+        <dt>Platform</dt><dd>Android (Google Play)</dd>
+        <dt>Release</dt><dd>Early access, 2027</dd>
+        <dt>Price</dt><dd>Free, with optional in-app purchases and rewarded ads</dd>
+        <dt>Genre</dt><dd>Real-time 1v1 card battle</dd>
+        <dt>Contact</dt><dd><a data-link="email" href="#">Email</a></dd>
+      </dl>
+      <p>Chicken Stealer Rush is a real-time card battle where two players each command three goblins guarding three nests. Players spend Grub to send goblins raiding the shared coop or each other's nests, and play Nets, Spike Moats and Firebombs to defend and counter. Matches last 2 minutes 30 seconds.</p>
+      <!-- assets/presskit.zip: logo, icon, key art, screenshots, this fact sheet. -->
+      <a class="btn btn-main" href="assets/presskit.zip" download>Download the press kit (.zip)</a>
+    </div>
+  </section>
+
+  <footer>
+    <div class="row">
+      <span>© 2026 Karberus Games</span>
+      <ul>
+        <li><a data-link="discord" href="#">Discord</a></li>
+        <li><a data-link="tiktok" href="#">TikTok</a></li>
+        <li><a data-link="youtube" href="#">YouTube</a></li>
+        <li><a data-link="instagram" href="#">Instagram</a></li>
+        <li><a href="privacy.html">Privacy policy</a></li>
+      </ul>
+    </div>
+  </footer>
+</div>
+
+<script>
+  // EDIT HERE: every link on the page comes from this one object.
+  // Leave a value empty ('') and every link using it is hidden.
+  const CONFIG = {
+    discord: 'https://discord.gg/jDXkCBDYVC',        // e.g. 'https://discord.gg/abc123'
+    tiktok: 'https://www.tiktok.com/@chickenstealerrush',         // e.g. 'https://www.tiktok.com/@chickenstealerrush'
+    youtube: 'https://www.youtube.com/@ChickenStealerRush',        // channel link
+    instagram: 'https://www.instagram.com/chickenstealerrush/',
+    email: 'karberusplay@gmail.com',          // e.g. 'hello@karberusgames.com' (mailto: is added for you)
+    youtubeId: ''       // the trailer's video id: the part after watch?v=
+  };
+
+  // Each <a data-link="name"> gets CONFIG[name] as its href, or is hidden when empty.
+  document.querySelectorAll('[data-link]').forEach(a => {
+    const v = CONFIG[a.dataset.link];
+    if (!v) {
+      const dd = a.closest('dd');
+      if (dd) { dd.hidden = true; dd.previousElementSibling.hidden = true; } // fact sheet row: hide label too
+      else if (a.closest('li')) a.closest('li').hidden = true;                // list item: hide the whole item
+      else a.hidden = true;
+      return;
+    }
+    a.href = a.dataset.link === 'email' ? 'mailto:' + v : v;
+    if (a.dataset.link !== 'email') { a.target = '_blank'; a.rel = 'noopener'; }
+  });
+
+  // Trailer: swap the placeholder for a privacy-friendly YouTube embed when an id is set.
+  if (CONFIG.youtubeId) {
+    document.getElementById('video').innerHTML =
+      '<iframe src="https://www.youtube-nocookie.com/embed/' + encodeURIComponent(CONFIG.youtubeId) +
+      '" title="Chicken Stealer Rush trailer" allow="accelerometer; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+  }
+
+</script>
+</body>
+</html>
